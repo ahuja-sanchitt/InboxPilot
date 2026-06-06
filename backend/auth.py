@@ -10,6 +10,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+os.environ["OAUTHLIB_RELAX_TOKEN_SCOPE"] = "1"
+
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 SCOPES = [

@@ -142,7 +142,7 @@ newer entry that replaced it.
 
 - **Date:** 2026-06-06
 - **Phase / area:** Backend / AI
-- **Status:** Accepted
+- **Status:** Superseded by D-009
 - **Decision:** Use `claude-sonnet-4-6` for inbox summarization and triage in both the web app and MCP server.
 
 **Options considered:**
@@ -154,5 +154,23 @@ newer entry that replaced it.
 | claude-haiku-4-5 | Cheapest and fastest — but may miss nuance in triage and action detection |
 
 **Why chosen:** Best balance of quality and cost for the summarization task. Email triage needs real reasoning but not Opus-level capability.
+
+---
+
+## D-009 — Switch AI provider from Anthropic to OpenAI
+
+- **Date:** 2026-06-20
+- **Phase / area:** Backend / AI
+- **Status:** Accepted
+- **Decision:** Replace `anthropic` + `claude-sonnet-4-6` with `openai` + `gpt-4o-mini` for email summarization in `claude_ai.py`.
+
+**Options considered:**
+
+| Option | Tradeoff |
+| --- | --- |
+| **OpenAI `gpt-4o-mini`** ✅ | User already has an OpenAI API key and credits — zero extra cost to get started |
+| Anthropic `claude-sonnet-4-6` | Better reasoning for triage — but requires separate Anthropic account and minimum $5 credit top-up |
+
+**Why chosen:** User has an existing OpenAI key. No reason to buy new credits just to test the app. `gpt-4o-mini` is fast and cheap enough for email summarization. Supersedes D-008.
 
 ---

@@ -1,10 +1,11 @@
 import os
-import anthropic
+import json
+from openai import OpenAI
 from dotenv import load_dotenv
 
 load_dotenv()
 
-client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 
 def summarize_emails(emails: list[dict]) -> list[dict]:
@@ -22,22 +23,26 @@ Body: {email['body'][:1000] or email['snippet']}
 ---
 """
 
-    message = client.messages.create(
-        model="claude-sonnet-4-6",
-        max_tokens=2048,
-        system=(
-            "You are an email assistant. Summarize each email concisely. "
-            "For each email return a JSON array where each item has: "
-            "index (int), from (string), subject (string), date (string), "
-            "summary (1-2 sentence summary), needs_reply (boolean), "
-            "action_required (string or null). "
-            "Return ONLY valid JSON, no markdown, no extra text."
-        ),
-        messages=[{"role": "user", "content": f"Summarize these emails:\n{email_text}"}],
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        response_format={"type": "json_object"},
+        messages=[
+            {
+                "role": "system",
+                "content": (
+                    "You are an email assistant. Summarize each email concisely. "
+                    "Return a JSON object with a single key 'emails' containing an array. "
+                    "Each item must have: index (int), from (string), subject (string), "
+                    "date (string), summary (1-2 sentence summary), needs_reply (boolean), "
+                    "action_required (string or null)."
+                ),
+            },
+            {"role": "user", "content": f"Summarize these emails:\n{email_text}"},
+        ],
     )
 
-    import json
     try:
-        return json.loads(message.content[0].text)
+        data = json.loads(response.choices[0].message.content)
+        return data.get("emails", data) if isinstance(data, dict) else data
     except Exception:
         return [{"index": i + 1, "summary": "Could not parse summary."} for i in range(len(emails))]

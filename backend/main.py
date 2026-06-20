@@ -10,6 +10,7 @@ from auth import router as auth_router
 from routes.summary import router as summary_router
 from routes.drafts import router as drafts_router
 from routes.send import router as send_router
+from routes.emails import router as emails_router
 
 load_dotenv()
 
@@ -43,6 +44,7 @@ app.include_router(auth_router)
 app.include_router(summary_router)
 app.include_router(drafts_router)
 app.include_router(send_router)
+app.include_router(emails_router)
 
 
 @app.get("/")

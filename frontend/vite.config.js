@@ -13,6 +13,7 @@ export default defineConfig({
       '/summary': 'http://localhost:8000',
       '/drafts': 'http://localhost:8000',
       '/send': 'http://localhost:8000',
+      '/emails': 'http://localhost:8000',
     },
   },
 })

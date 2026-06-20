@@ -1,34 +1,42 @@
 export default function Landing() {
   return (
-    <div className="min-h-screen bg-gray-950 flex flex-col items-center justify-center px-4">
+    <div className="min-h-screen flex flex-col items-center justify-center px-4">
       <div className="max-w-md w-full text-center">
-        <h1 className="text-4xl font-bold text-white mb-2 tracking-tight">
-          Inbox<span className="text-violet-400">Pilot</span>
-        </h1>
-        <p className="text-gray-400 mb-10 text-lg">
-          Stop doing email manually.
-        </p>
 
-        <a
-          href="/auth/login"
-          className="inline-flex items-center gap-3 bg-white text-gray-800 font-medium px-6 py-3 rounded-lg hover:bg-gray-100 transition-colors w-full justify-center mb-10"
-        >
-          <GoogleIcon />
-          Sign in with Google
-        </a>
+        {/* glow orb behind title */}
+        <div className="absolute left-1/2 -translate-x-1/2 w-96 h-96 bg-violet-600/20 rounded-full blur-3xl pointer-events-none -z-10" />
 
-        <div className="grid grid-cols-1 gap-3 text-left">
-          {[
-            { icon: '✦', text: 'Summarize your inbox with AI' },
-            { icon: '✦', text: 'Create drafts for multiple people at once' },
-            { icon: '✦', text: 'Send the same email to everyone in seconds' },
-          ].map(item => (
-            <div key={item.text} className="flex items-center gap-3 text-gray-400 text-sm">
-              <span className="text-violet-400 text-xs">{item.icon}</span>
-              {item.text}
-            </div>
-          ))}
+        <div className="mb-8">
+          <h1 className="text-5xl font-bold text-white mb-3 tracking-tight">
+            Inbox<span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-purple-300">Pilot</span>
+          </h1>
+          <p className="text-white/50 text-lg">Stop doing email manually.</p>
         </div>
+
+        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-8 mb-6 shadow-2xl shadow-black/40">
+          <a
+            href={`${import.meta.env.VITE_API_URL ?? ''}/auth/login`}
+            className="inline-flex items-center gap-3 bg-white text-gray-800 font-semibold px-6 py-3 rounded-xl hover:bg-gray-100 transition-all w-full justify-center mb-8 shadow-lg shadow-black/20"
+          >
+            <GoogleIcon />
+            Sign in with Google
+          </a>
+
+          <div className="space-y-3 text-left">
+            {[
+              { icon: '✦', text: 'Summarize your inbox with AI' },
+              { icon: '◈', text: 'Create drafts for multiple people at once' },
+              { icon: '⟶', text: 'Send the same email to everyone in seconds' },
+            ].map(item => (
+              <div key={item.text} className="flex items-center gap-3 text-white/50 text-sm">
+                <span className="text-violet-400 text-xs shrink-0">{item.icon}</span>
+                {item.text}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <p className="text-white/20 text-xs">Your emails never leave your session.</p>
       </div>
     </div>
   )

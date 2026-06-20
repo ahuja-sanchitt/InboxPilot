@@ -30,21 +30,41 @@ def _encode_message(msg) -> dict:
     return {"raw": raw}
 
 
-def fetch_recent_emails(service, count: int = 10) -> list[dict]:
+_LABEL_CATEGORY = {
+    "CATEGORY_PROMOTIONS": ("Promo", "purple"),
+    "CATEGORY_SOCIAL": ("Social", "blue"),
+    "CATEGORY_UPDATES": ("Update", "cyan"),
+    "CATEGORY_FORUMS": ("Forum", "orange"),
+    "IMPORTANT": ("Important", "amber"),
+}
+
+
+def _get_category(label_ids: list[str]) -> dict:
+    for label, (name, color) in _LABEL_CATEGORY.items():
+        if label in label_ids:
+            return {"label": name, "color": color}
+    return {"label": "Inbox", "color": "gray"}
+
+
+def fetch_inbox_preview(service, count: int = 10) -> list[dict]:
     result = service.users().messages().list(
         userId="me", maxResults=count, labelIds=["INBOX"]
     ).execute()
 
-    messages = result.get("messages", [])
     emails = []
-
-    for m in messages:
+    for m in result.get("messages", []):
         full = service.users().messages().get(
-            userId="me", id=m["id"], format="full"
+            userId="me", id=m["id"], format="metadata",
+            metadataHeaders=["Subject", "From", "Date"]
         ).execute()
 
         headers = {h["name"]: h["value"] for h in full["payload"]["headers"]}
-        body = _extract_body(full["payload"])
+        label_ids = full.get("labelIds", [])
+        from_addr = headers.get("From", "").lower()
+        needs_reply = (
+            "IMPORTANT" in label_ids
+            and not any(x in from_addr for x in ["noreply", "no-reply", "donotreply", "mailer-daemon"])
+        )
 
         emails.append({
             "id": m["id"],
@@ -52,7 +72,38 @@ def fetch_recent_emails(service, count: int = 10) -> list[dict]:
             "subject": headers.get("Subject", "(no subject)"),
             "date": headers.get("Date", ""),
             "snippet": full.get("snippet", ""),
-            "body": body,
+            "category": _get_category(label_ids),
+            "needs_reply": needs_reply,
+        })
+
+    return emails
+
+
+def fetch_recent_emails(service, count: int = 10, since: str = None) -> list[dict]:
+    kwargs = {"userId": "me", "maxResults": count, "labelIds": ["INBOX"]}
+    if since:
+        kwargs["q"] = f"after:{since}"
+        kwargs.pop("maxResults")  # fetch all emails from that date
+    result = service.users().messages().list(**kwargs).execute()
+
+    messages = result.get("messages", [])
+    emails = []
+
+    for m in messages:
+        # fetch metadata + snippet only — avoids downloading full body for every email
+        meta = service.users().messages().get(
+            userId="me", id=m["id"], format="metadata",
+            metadataHeaders=["Subject", "From", "Date"]
+        ).execute()
+
+        headers = {h["name"]: h["value"] for h in meta["payload"]["headers"]}
+        emails.append({
+            "id": m["id"],
+            "from": headers.get("From", ""),
+            "subject": headers.get("Subject", "(no subject)"),
+            "date": headers.get("Date", ""),
+            "snippet": meta.get("snippet", ""),
+            "body": meta.get("snippet", ""),  # use snippet as body for AI — fast and sufficient
         })
 
     return emails
